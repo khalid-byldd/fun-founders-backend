@@ -1,6 +1,6 @@
 # Fun Founders Backend
 
-Express + MongoDB backend with auth-protected routes for `teams`, `events`, `config`, plus a leaderboard endpoint.
+Express + PostgreSQL backend using **Drizzle ORM** with auth-protected routes for `teams`, `events`, `config`, plus leaderboard.
 
 ## Setup
 
@@ -8,27 +8,32 @@ Express + MongoDB backend with auth-protected routes for `teams`, `events`, `con
    ```bash
    npm install
    ```
-2. Create your env file:
+2. Create env:
    ```bash
    cp .env.example .env
    ```
-3. Update `.env` with your MongoDB URI and auth secret.
-4. Start server:
+3. Update `.env` with your Postgres connection.
+4. Generate and run migrations:
+   ```bash
+   npm run db:generate
+   npm run db:migrate
+   ```
+5. Start server:
    ```bash
    npm run dev
    ```
 
-## Base URL
+## Environment
 
-`http://localhost:3000`
+- `DATABASE_URL=postgres://user:pass@host:5432/dbname`
+- `PORT=3000`
+- `AUTH_SECRET=...`
 
 ## Auth Flow
 
-1. Create a user directly in MongoDB (`users` collection) with `username` and `password`.
-2. Login to get token:
-   - `POST /auth/login`
-3. Send token for all protected routes:
-   - `Authorization: Bearer <token>`
+1. Create a user row in `users` table with `username` and `password`.
+2. `POST /auth/login` to get token.
+3. Send token in `Authorization: Bearer <token>` for protected routes.
 
 ## Docs
 
@@ -41,98 +46,15 @@ Express + MongoDB backend with auth-protected routes for `teams`, `events`, `con
 - `GET /health`
 - `POST /auth/login`
 
-Login body:
-```json
-{
-  "username": "john",
-  "password": "secret123"
-}
-```
+### Protected
+- Teams CRUD: `POST/GET /teams`, `GET/PUT/DELETE /teams/:id`
+- Team members: `POST /teams/:id/members`, `DELETE /teams/:id/members`
+- Events CRUD: `POST/GET /events`, `GET/PUT/DELETE /events/:id`
+- Config CRUD: `POST/GET /config`, `GET/PUT/DELETE /config/:id`
+- Leaderboard: `POST /leaderboard`
 
-### Protected (require Bearer token)
+## Notes on DB shape
 
-### Teams CRUD
-- `POST /teams`
-- `GET /teams`
-- `GET /teams/:id`
-- `PUT /teams/:id`
-- `DELETE /teams/:id`
-
-Body:
-```json
-{
-  "name": "Team Alpha",
-  "captain": "John",
-  "season": "2024",
-  "logo": "https://cdn/logo.png",
-  "members": ["John", "Jane"]
-}
-```
-
-### Team Member Management
-- `POST /teams/:id/members` (add member)
-- `DELETE /teams/:id/members` (remove member)
-
-Body:
-```json
-{
-  "member": "Jane"
-}
-```
-
-### Events CRUD
-- `POST /events`
-- `GET /events`
-- `GET /events/:id`
-- `PUT /events/:id`
-- `DELETE /events/:id`
-
-Body:
-```json
-{
-  "season": "2024",
-  "winner": "<team_object_id>",
-  "name": "Final Match",
-  "logo": "https://cdn/event.png",
-  "scores": [
-    { "team_id": "<team_object_id>", "score": 60 },
-    { "team_id": "<team_object_id>", "score": 40 }
-  ]
-}
-```
-
-### Config CRUD
-- `POST /config`
-- `GET /config`
-- `GET /config/:id`
-- `PUT /config/:id`
-- `DELETE /config/:id`
-
-Body:
-```json
-{
-  "current_season": "2024",
-  "seasons": ["2023", "2024"]
-}
-```
-
-### Leaderboard
-- `POST /leaderboard`
-
-Body:
-```json
-{
-  "season": "2024"
-}
-```
-
-Response:
-```json
-[
-  {
-    "team_id": "<team_object_id>",
-    "team_name": "Team Alpha",
-    "scores": 100
-  }
-]
-```
+- `events` table stores event metadata (`season`, `winner`, `name`, `logo`).
+- `event_scores` table stores one row per team score for each event.
+- Leaderboard sums `event_scores.score` by `team_id` filtered by season.

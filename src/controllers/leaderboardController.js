@@ -1,5 +1,6 @@
-const mongoose = require('mongoose');
-const Event = require('../models/Event');
+const { sql } = require('drizzle-orm');
+const { db } = require('../db/client');
+const { eventScores, events, teams } = require('../db/schema');
 const { sendResponse } = require('../utils/response');
 
 const getLeaderboard = async (req, res, next) => {
@@ -10,41 +11,21 @@ const getLeaderboard = async (req, res, next) => {
       return sendResponse(res, 400, 'season is required in body.', null);
     }
 
-    const leaderboard = await Event.aggregate([
-      { $match: { season } },
-      { $unwind: '$scores' },
-      {
-        $group: {
-          _id: '$scores.team_id',
-          scores: { $sum: '$scores.score' },
-        },
-      },
-      {
-        $lookup: {
-          from: 'teams',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'team',
-        },
-      },
-      { $unwind: '$team' },
-      {
-        $project: {
-          _id: 0,
-          team_id: '$_id',
-          team_name: '$team.name',
-          scores: 1,
-        },
-      },
-      { $sort: { scores: -1, team_name: 1 } },
-    ]);
+    const rows = await db
+      .select({
+        team_id: teams.id,
+        team_name: teams.name,
+        scores: sql`sum(${eventScores.score})`.mapWith(Number),
+      })
+      .from(eventScores)
+      .innerJoin(events, sql`${eventScores.eventId} = ${events.id}`)
+      .innerJoin(teams, sql`${eventScores.teamId} = ${teams.id}`)
+      .where(sql`${events.season} = ${season}`)
+      .groupBy(teams.id, teams.name)
+      .orderBy(sql`sum(${eventScores.score}) desc`, teams.name);
 
-    return sendResponse(res, 200, 'Leaderboard fetched successfully', leaderboard);
+    return sendResponse(res, 200, 'Leaderboard fetched successfully', rows);
   } catch (error) {
-    if (error instanceof mongoose.Error) {
-      return sendResponse(res, 400, error.message, null);
-    }
-
     next(error);
   }
 };

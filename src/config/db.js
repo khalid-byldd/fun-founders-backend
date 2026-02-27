@@ -1,14 +1,8 @@
-const mongoose = require('mongoose');
+const { pool } = require('../db/client');
 
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI;
-
-  if (!uri) {
-    throw new Error('MONGODB_URI is not configured in environment variables.');
-  }
-
-  await mongoose.connect(uri);
-  console.log('MongoDB connected');
+  await pool.query('SELECT 1');
+  console.log('PostgreSQL connected');
 };
 
 module.exports = connectDB;
