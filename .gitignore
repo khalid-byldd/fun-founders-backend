@@ -1,11 +1,11 @@
 # dependencies
 node_modules/
-
+drizzle
 # environment files
 .env
 .env.*
 !.env.example
-
+package-lock.json
 # logs
 logs/
 *.log
