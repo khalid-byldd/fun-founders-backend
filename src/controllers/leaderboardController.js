@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 const Event = require('../models/Event');
+const { sendResponse } = require('../utils/response');
 
 const getLeaderboard = async (req, res, next) => {
   try {
     const { season } = req.body;
 
     if (!season || typeof season !== 'string') {
-      return res.status(400).json({ message: 'season is required in body.' });
+      return sendResponse(res, 400, 'season is required in body.', null);
     }
 
     const leaderboard = await Event.aggregate([
@@ -38,10 +39,10 @@ const getLeaderboard = async (req, res, next) => {
       { $sort: { scores: -1, team_name: 1 } },
     ]);
 
-    res.json(leaderboard);
+    return sendResponse(res, 200, 'Leaderboard fetched successfully', leaderboard);
   } catch (error) {
     if (error instanceof mongoose.Error) {
-      return res.status(400).json({ message: error.message });
+      return sendResponse(res, 400, error.message, null);
     }
 
     next(error);

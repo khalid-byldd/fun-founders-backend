@@ -1,9 +1,10 @@
 const Team = require('../models/Team');
+const { sendResponse } = require('../utils/response');
 
 const createTeam = async (req, res, next) => {
   try {
     const team = await Team.create(req.body);
-    res.status(201).json(team);
+    return sendResponse(res, 201, 'Team created successfully', team);
   } catch (error) {
     next(error);
   }
@@ -12,7 +13,7 @@ const createTeam = async (req, res, next) => {
 const getTeams = async (_req, res, next) => {
   try {
     const teams = await Team.find();
-    res.json(teams);
+    return sendResponse(res, 200, 'Teams fetched successfully', teams);
   } catch (error) {
     next(error);
   }
@@ -22,10 +23,10 @@ const getTeamById = async (req, res, next) => {
   try {
     const team = await Team.findById(req.params.id);
     if (!team) {
-      return res.status(404).json({ message: 'Team not found' });
+      return sendResponse(res, 404, 'Team not found', null);
     }
 
-    res.json(team);
+    return sendResponse(res, 200, 'Team fetched successfully', team);
   } catch (error) {
     next(error);
   }
@@ -39,10 +40,10 @@ const updateTeamById = async (req, res, next) => {
     });
 
     if (!team) {
-      return res.status(404).json({ message: 'Team not found' });
+      return sendResponse(res, 404, 'Team not found', null);
     }
 
-    res.json(team);
+    return sendResponse(res, 200, 'Team updated successfully', team);
   } catch (error) {
     next(error);
   }
@@ -53,10 +54,10 @@ const deleteTeamById = async (req, res, next) => {
     const team = await Team.findByIdAndDelete(req.params.id);
 
     if (!team) {
-      return res.status(404).json({ message: 'Team not found' });
+      return sendResponse(res, 404, 'Team not found', null);
     }
 
-    res.json({ message: 'Team deleted successfully' });
+    return sendResponse(res, 200, 'Team deleted successfully', team);
   } catch (error) {
     next(error);
   }
@@ -67,7 +68,7 @@ const addTeamMember = async (req, res, next) => {
     const { member } = req.body;
 
     if (!member || typeof member !== 'string') {
-      return res.status(400).json({ message: 'member (string) is required in body' });
+      return sendResponse(res, 400, 'member (string) is required in body', null);
     }
 
     const team = await Team.findByIdAndUpdate(
@@ -77,10 +78,10 @@ const addTeamMember = async (req, res, next) => {
     );
 
     if (!team) {
-      return res.status(404).json({ message: 'Team not found' });
+      return sendResponse(res, 404, 'Team not found', null);
     }
 
-    res.json(team);
+    return sendResponse(res, 200, 'Team member added successfully', team);
   } catch (error) {
     next(error);
   }
@@ -91,7 +92,7 @@ const removeTeamMember = async (req, res, next) => {
     const { member } = req.body;
 
     if (!member || typeof member !== 'string') {
-      return res.status(400).json({ message: 'member (string) is required in body' });
+      return sendResponse(res, 400, 'member (string) is required in body', null);
     }
 
     const team = await Team.findByIdAndUpdate(
@@ -101,10 +102,10 @@ const removeTeamMember = async (req, res, next) => {
     );
 
     if (!team) {
-      return res.status(404).json({ message: 'Team not found' });
+      return sendResponse(res, 404, 'Team not found', null);
     }
 
-    res.json(team);
+    return sendResponse(res, 200, 'Team member removed successfully', team);
   } catch (error) {
     next(error);
   }

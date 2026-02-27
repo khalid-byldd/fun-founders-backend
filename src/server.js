@@ -3,17 +3,18 @@ const express = require('express');
 const connectDB = require('./config/db');
 const apiRoutes = require('./routes');
 const openApiSpec = require('./docs/openapi');
+const { sendResponse } = require('./utils/response');
 
 const app = express();
 
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
+  return sendResponse(res, 200, 'Service is healthy', { status: 'ok' });
 });
 
 app.get('/openapi.json', (_req, res) => {
-  res.json(openApiSpec);
+  return res.json(openApiSpec);
 });
 
 app.get('/docs', (_req, res) => {
@@ -41,7 +42,7 @@ app.use('/', apiRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(500).json({ message: 'Internal server error' });
+  return sendResponse(res, 500, 'Internal server error', null);
 });
 
 const port = process.env.PORT || 3000;

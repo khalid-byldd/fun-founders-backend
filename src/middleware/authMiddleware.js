@@ -1,11 +1,12 @@
 const { verifyToken } = require('../utils/token');
+const { sendResponse } = require('../utils/response');
 
 const requireAuth = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Missing or invalid Authorization header' });
+      return sendResponse(res, 401, 'Missing or invalid Authorization header', null);
     }
 
     const token = authHeader.replace('Bearer ', '').trim();
@@ -19,7 +20,7 @@ const requireAuth = (req, res, next) => {
 
     return next();
   } catch (_error) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return sendResponse(res, 401, 'Unauthorized', null);
   }
 };
 

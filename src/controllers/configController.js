@@ -1,9 +1,10 @@
 const Config = require('../models/Config');
+const { sendResponse } = require('../utils/response');
 
 const createConfig = async (req, res, next) => {
   try {
     const config = await Config.create(req.body);
-    res.status(201).json(config);
+    return sendResponse(res, 201, 'Config created successfully', config);
   } catch (error) {
     next(error);
   }
@@ -12,7 +13,7 @@ const createConfig = async (req, res, next) => {
 const getConfigs = async (_req, res, next) => {
   try {
     const configs = await Config.find();
-    res.json(configs);
+    return sendResponse(res, 200, 'Configs fetched successfully', configs);
   } catch (error) {
     next(error);
   }
@@ -23,10 +24,10 @@ const getConfigById = async (req, res, next) => {
     const config = await Config.findById(req.params.id);
 
     if (!config) {
-      return res.status(404).json({ message: 'Config not found' });
+      return sendResponse(res, 404, 'Config not found', null);
     }
 
-    res.json(config);
+    return sendResponse(res, 200, 'Config fetched successfully', config);
   } catch (error) {
     next(error);
   }
@@ -40,10 +41,10 @@ const updateConfigById = async (req, res, next) => {
     });
 
     if (!config) {
-      return res.status(404).json({ message: 'Config not found' });
+      return sendResponse(res, 404, 'Config not found', null);
     }
 
-    res.json(config);
+    return sendResponse(res, 200, 'Config updated successfully', config);
   } catch (error) {
     next(error);
   }
@@ -54,10 +55,10 @@ const deleteConfigById = async (req, res, next) => {
     const config = await Config.findByIdAndDelete(req.params.id);
 
     if (!config) {
-      return res.status(404).json({ message: 'Config not found' });
+      return sendResponse(res, 404, 'Config not found', null);
     }
 
-    res.json({ message: 'Config deleted successfully' });
+    return sendResponse(res, 200, 'Config deleted successfully', config);
   } catch (error) {
     next(error);
   }
