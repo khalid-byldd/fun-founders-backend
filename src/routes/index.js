@@ -1,18 +1,19 @@
 const express = require('express');
-const User = require('../models/User');
-const Team = require('../models/Team');
-const Event = require('../models/Event');
-const Config = require('../models/Config');
-const createCrudController = require('../controllers/crudController');
-const createCrudRoutes = require('./crudRoutes');
+const teamsRoutes = require('./teamsRoutes');
+const eventsRoutes = require('./eventsRoutes');
+const configRoutes = require('./configRoutes');
+const authRoutes = require('./authRoutes');
 const { getLeaderboard } = require('../controllers/leaderboardController');
+const { requireAuth } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.use('/users', createCrudRoutes(createCrudController(User)));
-router.use('/teams', createCrudRoutes(createCrudController(Team)));
-router.use('/events', createCrudRoutes(createCrudController(Event, 'winner scores.team_id')));
-router.use('/config', createCrudRoutes(createCrudController(Config)));
+router.use('/auth', authRoutes);
+
+router.use(requireAuth);
+router.use('/teams', teamsRoutes);
+router.use('/events', eventsRoutes);
+router.use('/config', configRoutes);
 
 router.post('/leaderboard', getLeaderboard);
 
