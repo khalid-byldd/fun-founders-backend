@@ -1,6 +1,6 @@
 # Fun Founders Backend
 
-Express + MongoDB backend with CRUD routes for `users`, `teams`, `events`, and `config`, plus a leaderboard endpoint.
+Express + MongoDB backend with auth-protected routes for `teams`, `events`, `config`, plus a leaderboard endpoint.
 
 ## Setup
 
@@ -12,7 +12,7 @@ Express + MongoDB backend with CRUD routes for `users`, `teams`, `events`, and `
    ```bash
    cp .env.example .env
    ```
-3. Update `.env` with your MongoDB URI.
+3. Update `.env` with your MongoDB URI and auth secret.
 4. Start server:
    ```bash
    npm run dev
@@ -22,25 +22,34 @@ Express + MongoDB backend with CRUD routes for `users`, `teams`, `events`, and `
 
 `http://localhost:3000`
 
+## Auth Flow
+
+1. Create a user directly in MongoDB (`users` collection) with `username` and `password`.
+2. Login to get token:
+   - `POST /auth/login`
+3. Send token for all protected routes:
+   - `Authorization: Bearer <token>`
+
+## Docs
+
+- OpenAPI JSON: `GET /openapi.json`
+- Swagger UI: `GET /docs`
+
 ## Routes
 
-### Health
+### Public
 - `GET /health`
+- `POST /auth/login`
 
-### Users CRUD
-- `POST /users`
-- `GET /users`
-- `GET /users/:id`
-- `PUT /users/:id`
-- `DELETE /users/:id`
-
-Body:
+Login body:
 ```json
 {
   "username": "john",
   "password": "secret123"
 }
 ```
+
+### Protected (require Bearer token)
 
 ### Teams CRUD
 - `POST /teams`
